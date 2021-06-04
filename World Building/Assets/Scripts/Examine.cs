@@ -1,15 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
- 
+using UnityEngine.UI;
+
 public class Examine : MonoBehaviour
 {
     Camera mainCam;//Camera Object Will Be Placed In Front Of
     GameObject clickedObject;//Currently Clicked Object
     public SC_FPSController FPSController;
 
+    public TextMeshProUGUI textMesh;
+    public Object ExaminedObject;
+    public Image highlight;
+
     //Holds Original Postion And Rotation So The Object Can Be Replaced Correctly
-    Vector3 originaPosition;
+    Vector3 originalPosition;
     Vector3 originalRotation;
 
     //If True Allow Rotation Of Object
@@ -17,6 +23,7 @@ public class Examine : MonoBehaviour
 
     void Start()
     {
+        textMesh.enabled = false;
         mainCam = Camera.main;
         examineMode = false;
     }
@@ -30,7 +37,6 @@ public class Examine : MonoBehaviour
         ExitExamineMode();//Returns Object To Original Postion
     }
 
-
     void ClickObject()
     {
         if (Input.GetMouseButtonDown(0) && examineMode == false)
@@ -42,11 +48,15 @@ public class Examine : MonoBehaviour
             {
                 if (hit.transform.tag == "Object")
                 {
+                    ExaminedObject = hit.transform.GetComponent<Object>();
+                    textMesh.text = ExaminedObject.objectText;
+                    textMesh.enabled = true;
+
                     //ClickedObject Will Be The Object Hit By The Raycast
                     clickedObject = hit.transform.gameObject;
 
                     //Save The Original Postion And Rotation
-                    originaPosition = clickedObject.transform.position;
+                    originalPosition = clickedObject.transform.position;
                     originalRotation = clickedObject.transform.rotation.eulerAngles;
 
                     //Now Move Object In Front Of Camera
@@ -84,17 +94,19 @@ public class Examine : MonoBehaviour
         if (Input.GetMouseButtonDown(1) && examineMode)
         {
             //Reset Object To Original Position
-            clickedObject.transform.position = originaPosition;
+            clickedObject.transform.position = originalPosition;
             clickedObject.transform.eulerAngles = originalRotation;
 
             //Unpause Game
             Time.timeScale = 1;
 
-            //Stop player camera rotation
+            //Start player camera rotation
             FPSController.lookSpeed = FPSController.intLookSpeed;
 
             //Return To Normal State
             examineMode = false;
+
+            textMesh.enabled = false;
         }
     }
 }
